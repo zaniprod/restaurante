@@ -46,7 +46,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 w-full border-b border-line bg-transparent py-2 text-ink outline-none focus:border-green"
+              className="mt-1 w-full rounded-lg border border-line bg-white/60 px-3 py-2 text-ink outline-none focus:border-green"
             />
           </div>
 
@@ -60,7 +60,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-1 w-full border-b border-line bg-transparent py-2 text-ink outline-none focus:border-green"
+              className="mt-1 w-full rounded-lg border border-line bg-white/60 px-3 py-2 text-ink outline-none focus:border-green"
             />
           </div>
 
@@ -72,7 +72,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full bg-green py-3 font-medium text-paper transition-colors hover:bg-green-dark"
+            className="w-full rounded-lg bg-green py-3 font-medium text-paper transition-colors hover:bg-green-dark"
           >
             Entrar
           </button>

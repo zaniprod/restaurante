@@ -148,7 +148,7 @@ export default function CaixaPage() {
         </div>
 
         <aside className="lg:sticky lg:top-6 lg:self-start">
-          <div className="border border-line bg-white/40 p-4">
+          <div className="rounded-lg border border-line bg-white/40 p-4">
             <h2 className="mb-3 font-serif text-lg text-ink">Comanda</h2>
             <Cart lines={cart} onRemove={handleRemove} />
 
@@ -182,7 +182,7 @@ export default function CaixaPage() {
           <h3 className="mb-4 font-serif text-lg text-ink">Editando venda</h3>
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]">
             <MenuGrid items={items} onSelect={handleEditSelect} />
-            <div className="border border-line bg-white/40 p-4">
+            <div className="rounded-lg border border-line bg-white/40 p-4">
               <Cart lines={editCart} onRemove={(index) => setEditCart((current) => removeLine(current, index))} />
               <div className="mt-4">
                 <PaymentForm

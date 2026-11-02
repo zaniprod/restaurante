@@ -21,7 +21,8 @@ export function ExpenseForm(props: {
     onSubmit({ date, description, amount: parseFloat(amount || "0") });
   }
 
-  const inputClass = "w-full border-b border-line bg-transparent py-1.5 text-sm text-ink outline-none focus:border-green";
+  const inputClass =
+    "w-full rounded-lg border border-line bg-white/60 px-2 py-1.5 text-sm text-ink outline-none focus:border-green";
 
   return (
     <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-[140px_1fr_140px_auto]">
@@ -59,7 +60,11 @@ export function ExpenseForm(props: {
         />
       </div>
 
-      <button type="button" onClick={handleSubmit} className="bg-green px-5 py-2 text-sm font-medium text-paper hover:bg-green-dark">
+      <button
+        type="button"
+        onClick={handleSubmit}
+        className="rounded-lg bg-green px-5 py-2 text-sm font-medium text-paper hover:bg-green-dark"
+      >
         Salvar
       </button>
 

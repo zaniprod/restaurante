@@ -56,7 +56,7 @@ export default function DespesasPage() {
       <h1 className="text-2xl font-semibold text-ink">Despesas</h1>
       <p className="mt-1 text-sm text-ink-soft">Este mês, {formatBRL(monthTotal)} no total</p>
 
-      <div className="mt-6 border border-line bg-white/40 p-4">
+      <div className="mt-6 rounded-lg border border-line bg-white/40 p-4">
         <ExpenseForm onSubmit={handleSubmit} />
         {error && (
           <p role="alert" className="mt-3 text-sm text-rust">

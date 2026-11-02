@@ -6,9 +6,19 @@ describe("PaymentForm", () => {
   test("starts with one dinheiro row showing a valor recebido field, prefilled with the total", () => {
     render(<PaymentForm totalCents={3490} onConfirm={vi.fn()} />);
 
-    expect(screen.getAllByRole("combobox")).toHaveLength(1);
+    expect(screen.getAllByRole("radiogroup")).toHaveLength(1);
+    expect(screen.getByRole("radio", { name: "Dinheiro", checked: true })).toBeInTheDocument();
     expect(screen.getByLabelText(/valor recebido/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^valor$/i)).toHaveValue(34.9);
+  });
+
+  test("clicking Pix switches the row's method and hides the cash fields", () => {
+    render(<PaymentForm totalCents={3490} onConfirm={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole("radio", { name: "Pix" }));
+
+    expect(screen.getByRole("radio", { name: "Pix", checked: true })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/valor recebido/i)).not.toBeInTheDocument();
   });
 
   test("leaving valor recebido empty treats it as an exact cash payment (no change, no negative troco)", () => {
@@ -42,7 +52,7 @@ describe("PaymentForm", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Adicionar forma de pagamento" }));
 
-    expect(screen.getAllByRole("combobox")).toHaveLength(2);
+    expect(screen.getAllByRole("radiogroup")).toHaveLength(2);
   });
 
   test("shows the computed change for a dinheiro row once valor recebido is entered", () => {

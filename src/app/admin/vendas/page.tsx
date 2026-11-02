@@ -97,7 +97,7 @@ export default function VendasPage() {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="border-b border-line bg-transparent py-1 text-sm text-ink outline-none focus:border-green"
+            className="rounded-lg border border-line bg-white/60 px-2 py-1 text-sm text-ink outline-none focus:border-green"
           />
         </div>
       </div>
@@ -117,7 +117,7 @@ export default function VendasPage() {
           <h3 className="mb-4 font-serif text-lg text-ink">Editando venda</h3>
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]">
             <MenuGrid items={items} onSelect={handleEditSelect} />
-            <div className="border border-line bg-white/40 p-4">
+            <div className="rounded-lg border border-line bg-white/40 p-4">
               <Cart lines={editCart} onRemove={(index) => setEditCart((current) => removeLine(current, index))} />
               <div className="mt-4">
                 <PaymentForm

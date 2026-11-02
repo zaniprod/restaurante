@@ -12,8 +12,8 @@ describe("MenuGrid", () => {
   test("renders category headings and one button per item with formatted price", () => {
     render(<MenuGrid items={items} onSelect={vi.fn()} />);
 
-    expect(screen.getByText("Bebidas")).toBeInTheDocument();
-    expect(screen.getByText("Pratos")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Bebidas" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Pratos" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Refrigerante Lata.*R\$ 7,00/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Buffet por KG" })).toBeInTheDocument();
   });
@@ -38,5 +38,28 @@ describe("MenuGrid", () => {
     fireEvent.click(screen.getByRole("button", { name: "Adicionar" }));
 
     expect(onSelect).toHaveBeenCalledWith(items[1], 37.5);
+  });
+
+  test("searching filters items by name across categories", () => {
+    render(<MenuGrid items={items} onSelect={vi.fn()} />);
+
+    fireEvent.change(screen.getByLabelText("Buscar item"), { target: { value: "refri" } });
+
+    expect(screen.getByRole("button", { name: /Refrigerante Lata/ })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Buffet por KG" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Pratos" })).not.toBeInTheDocument();
+  });
+
+  test("clicking a category chip shows only that category, clicking it again shows all", () => {
+    render(<MenuGrid items={items} onSelect={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Pratos" }));
+
+    expect(screen.getByRole("button", { name: "Buffet por KG" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Refrigerante Lata/ })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Pratos" }));
+
+    expect(screen.getByRole("button", { name: /Refrigerante Lata/ })).toBeInTheDocument();
   });
 });

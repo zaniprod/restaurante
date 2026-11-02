@@ -23,9 +23,9 @@ export function SalesList(props: {
 
           <span className="flex-1">
             {sale.status === "cancelled" ? (
-              <span className="border border-rust px-1.5 py-0.5 text-xs text-rust">Cancelada</span>
+              <span className="rounded-full border border-rust px-2 py-0.5 text-xs text-rust">Cancelada</span>
             ) : sale.edited ? (
-              <span className="border border-ink-soft px-1.5 py-0.5 text-xs text-ink-soft">Editada</span>
+              <span className="rounded-full border border-ink-soft px-2 py-0.5 text-xs text-ink-soft">Editada</span>
             ) : null}
           </span>
 

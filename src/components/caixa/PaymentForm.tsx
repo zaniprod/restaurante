@@ -11,7 +11,40 @@ function toNumber(value: string): number {
   return value === "" ? 0 : parseFloat(value);
 }
 
+const METHODS: { value: PaymentMethod; label: string }[] = [
+  { value: "dinheiro", label: "Dinheiro" },
+  { value: "pix", label: "Pix" },
+  { value: "cartao", label: "Cartão" },
+];
+
 type Row = { method: PaymentMethod; amount: string; cashReceived: string };
+
+function MethodSelector(props: { value: PaymentMethod; onChange: (method: PaymentMethod) => void }) {
+  const { value, onChange } = props;
+
+  return (
+    <div role="radiogroup" aria-label="Forma de pagamento" className="inline-flex rounded-full border border-line bg-paper-dim p-1">
+      {METHODS.map((method) => {
+        const checked = value === method.value;
+        return (
+          <button
+            key={method.value}
+            type="button"
+            role="radio"
+            aria-checked={checked}
+            aria-label={method.label}
+            onClick={() => onChange(method.value)}
+            className={`rounded-full px-3 py-1 text-sm transition-colors ${
+              checked ? "bg-green text-paper" : "text-ink-soft hover:text-ink"
+            }`}
+          >
+            {method.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 export function PaymentForm(props: {
   totalCents: number;
@@ -62,41 +95,30 @@ export function PaymentForm(props: {
   }
 
   const inputClass =
-    "w-full border-b border-line bg-transparent px-1 py-1.5 text-sm text-ink outline-none focus:border-green";
+    "w-full rounded-lg border border-line bg-transparent px-2 py-1.5 text-sm text-ink outline-none focus:border-green";
 
   return (
     <div className="space-y-4">
       {rows.map((row, index) => (
-        <div key={index} className="grid grid-cols-2 gap-3 border border-line bg-white/50 p-3">
-          <div>
-            <label className="block text-xs text-ink-soft">Forma</label>
-            <select
-              value={row.method}
-              onChange={(e) => updateRow(index, { method: e.target.value as PaymentMethod })}
-              className={inputClass}
-            >
-              <option value="dinheiro">Dinheiro</option>
-              <option value="pix">Pix</option>
-              <option value="cartao">Cartão</option>
-            </select>
-          </div>
+        <div key={index} className="space-y-3 rounded-lg border border-line bg-white/50 p-3">
+          <MethodSelector value={row.method} onChange={(method) => updateRow(index, { method })} />
 
-          <div>
-            <label htmlFor={`valor-${index}`} className="block text-xs text-ink-soft">
-              Valor
-            </label>
-            <input
-              id={`valor-${index}`}
-              type="number"
-              step="0.01"
-              value={row.amount}
-              onChange={(e) => updateRow(index, { amount: e.target.value })}
-              className={`${inputClass} text-right`}
-            />
-          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor={`valor-${index}`} className="block text-xs text-ink-soft">
+                Valor
+              </label>
+              <input
+                id={`valor-${index}`}
+                type="number"
+                step="0.01"
+                value={row.amount}
+                onChange={(e) => updateRow(index, { amount: e.target.value })}
+                className={`${inputClass} text-right`}
+              />
+            </div>
 
-          {row.method === "dinheiro" && (
-            <>
+            {row.method === "dinheiro" && (
               <div>
                 <label htmlFor={`valor-recebido-${index}`} className="block text-xs text-ink-soft">
                   Valor recebido
@@ -110,18 +132,21 @@ export function PaymentForm(props: {
                   className={`${inputClass} text-right`}
                 />
               </div>
-              <div className="flex items-end justify-between">
-                <span className="text-xs text-ink-soft">Troco:</span>{" "}
-                <span className="font-medium text-green">
-                  {formatBRL(
-                    calculateChangeCents(
-                      Math.round(effectiveCashReceived(row) * 100),
-                      Math.round(toNumber(row.amount) * 100),
-                    ) / 100,
-                  )}
-                </span>
-              </div>
-            </>
+            )}
+          </div>
+
+          {row.method === "dinheiro" && (
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-ink-soft">Troco:</span>{" "}
+              <span className="font-medium text-green">
+                {formatBRL(
+                  calculateChangeCents(
+                    Math.round(effectiveCashReceived(row) * 100),
+                    Math.round(toNumber(row.amount) * 100),
+                  ) / 100,
+                )}
+              </span>
+            </div>
           )}
         </div>
       ))}
@@ -139,7 +164,7 @@ export function PaymentForm(props: {
       <button
         type="button"
         onClick={handleConfirm}
-        className="w-full bg-green py-3 text-base font-medium text-paper transition-colors hover:bg-green-dark"
+        className="w-full rounded-lg bg-green py-3 text-base font-medium text-paper transition-colors hover:bg-green-dark"
       >
         Confirmar
       </button>

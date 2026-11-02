@@ -49,7 +49,8 @@ export function PurchaseForm(props: {
     });
   }
 
-  const inputClass = "w-full border-b border-line bg-transparent py-1.5 text-sm text-ink outline-none focus:border-green";
+  const inputClass =
+    "w-full rounded-lg border border-line bg-white/60 px-2 py-1.5 text-sm text-ink outline-none focus:border-green";
 
   return (
     <div className="space-y-4">
@@ -74,7 +75,7 @@ export function PurchaseForm(props: {
               className={inputClass}
             />
             {suggestions?.index === index && suggestions.names.length > 0 && (
-              <div className="absolute z-10 mt-1 border border-line bg-paper shadow-none">
+              <div className="absolute z-10 mt-1 overflow-hidden rounded-lg border border-line bg-paper shadow-none">
                 {suggestions.names.map((name) => (
                   <button
                     key={name}
@@ -129,7 +130,11 @@ export function PurchaseForm(props: {
         <input id="purchase-photo" type="file" accept="image/*" onChange={(e) => setPhoto(e.target.files?.[0])} className="mt-1 text-sm" />
       </div>
 
-      <button type="button" onClick={handleSubmit} className="bg-green px-5 py-2 text-sm font-medium text-paper hover:bg-green-dark">
+      <button
+        type="button"
+        onClick={handleSubmit}
+        className="rounded-lg bg-green px-5 py-2 text-sm font-medium text-paper hover:bg-green-dark"
+      >
         Salvar
       </button>
     </div>
