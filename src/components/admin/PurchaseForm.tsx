@@ -100,6 +100,7 @@ export function PurchaseForm(props: {
       <input
         id="purchase-photo"
         type="file"
+        accept="image/*"
         onChange={(e) => setPhoto(e.target.files?.[0])}
       />
 

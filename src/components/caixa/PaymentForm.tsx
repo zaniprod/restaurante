@@ -13,10 +13,27 @@ function toNumber(value: string): number {
 
 type Row = { method: PaymentMethod; amount: string; cashReceived: string };
 
-export function PaymentForm(props: { totalCents: number; onConfirm: (payments: PaymentEntry[]) => void }) {
-  const { totalCents, onConfirm } = props;
-  const [rows, setRows] = useState<Row[]>([{ method: "dinheiro", amount: "", cashReceived: "" }]);
+export function PaymentForm(props: {
+  totalCents: number;
+  onConfirm: (payments: PaymentEntry[]) => void;
+  initialPayments?: PaymentEntry[];
+}) {
+  const { totalCents, onConfirm, initialPayments } = props;
+  const [rows, setRows] = useState<Row[]>(() =>
+    initialPayments && initialPayments.length > 0
+      ? initialPayments.map((payment) => ({
+          method: payment.method,
+          amount: String(payment.amount),
+          cashReceived: payment.cashReceived != null ? String(payment.cashReceived) : "",
+        }))
+      : [{ method: "dinheiro", amount: String(totalCents / 100), cashReceived: "" }],
+  );
   const [error, setError] = useState<string | null>(null);
+
+  // A blank "valor recebido" means the customer paid exactly that amount in cash — not zero.
+  function effectiveCashReceived(row: Row): number {
+    return row.cashReceived === "" ? toNumber(row.amount) : toNumber(row.cashReceived);
+  }
 
   function updateRow(index: number, patch: Partial<Row>) {
     setRows((current) => current.map((row, i) => (i === index ? { ...row, ...patch } : row)));
@@ -30,7 +47,7 @@ export function PaymentForm(props: { totalCents: number; onConfirm: (payments: P
     const payments: PaymentEntry[] = rows.map((row) => ({
       method: row.method,
       amount: toNumber(row.amount),
-      ...(row.method === "dinheiro" ? { cashReceived: toNumber(row.cashReceived) } : {}),
+      ...(row.method === "dinheiro" ? { cashReceived: effectiveCashReceived(row) } : {}),
     }));
 
     const result = validatePayments(payments, totalCents);
@@ -80,7 +97,7 @@ export function PaymentForm(props: { totalCents: number; onConfirm: (payments: P
               <span>
                 {formatBRL(
                   calculateChangeCents(
-                    Math.round(toNumber(row.cashReceived) * 100),
+                    Math.round(effectiveCashReceived(row) * 100),
                     Math.round(toNumber(row.amount) * 100),
                   ) / 100,
                 )}

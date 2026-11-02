@@ -2,8 +2,9 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { CartLine, MenuItem } from "@/lib/pos/cart";
-import type { PaymentEntry, PaymentMethod } from "@/lib/pos/payments";
+import { validatePayments, type PaymentEntry, type PaymentMethod } from "@/lib/pos/payments";
 import { createServerClient } from "@/lib/supabase/server";
+import { brazilDayEnd, brazilDayStart } from "@/lib/date";
 
 export type SaleWithDetails = {
   id: string;
@@ -37,68 +38,59 @@ export async function getMenuItems(client?: SupabaseClient): Promise<MenuItem[]>
   }));
 }
 
+function toRpcItems(lines: CartLine[]) {
+  return lines.map((line) => ({
+    // An edited sale's line may have lost its original menu_item_id (e.g. "" from a UI
+    // fallback); the RPC casts this to ::uuid, which errors on "" but accepts null.
+    menuItemId: line.menuItemId === "" ? null : line.menuItemId,
+    name: line.name,
+    quantity: line.quantity,
+    unitPrice: line.unitPrice,
+    lineTotal: line.lineTotal,
+  }));
+}
+
+function toRpcPayments(payments: PaymentEntry[]) {
+  return payments.map((payment) => ({
+    method: payment.method,
+    amount: payment.amount,
+    cashReceived: payment.cashReceived ?? null,
+  }));
+}
+
+// Server Actions are public endpoints — a client bug or a malicious direct call could send
+// payments that don't match the cart. Validate here too, not just in the PaymentForm UI.
+function assertPaymentsMatchTotal(lines: CartLine[], payments: PaymentEntry[]) {
+  const total = lines.reduce((sum, line) => sum + line.lineTotal, 0);
+  const totalCents = Math.round(total * 100);
+
+  const result = validatePayments(payments, totalCents);
+  if (!result.valid) {
+    throw new Error(result.error ?? "Pagamento inválido.");
+  }
+
+  return total;
+}
+
 export async function createSale(
   lines: CartLine[],
   payments: PaymentEntry[],
   client?: SupabaseClient,
 ): Promise<{ id: string }> {
   const supabase = client ?? (await createServerClient());
+  const total = assertPaymentsMatchTotal(lines, payments);
+  const id = crypto.randomUUID();
 
-  const total = lines.reduce((sum, line) => sum + line.lineTotal, 0);
+  const { error } = await supabase.rpc("create_sale", {
+    p_id: id,
+    p_total: total,
+    p_items: toRpcItems(lines),
+    p_payments: toRpcPayments(payments),
+  });
 
-  const { data: sale, error: saleError } = await supabase
-    .from("sales")
-    .insert({ total, status: "completed" })
-    .select("id")
-    .single();
+  if (error) throw error;
 
-  if (saleError) throw saleError;
-
-  const { error: itemsError } = await supabase.from("sale_items").insert(
-    lines.map((line) => ({
-      sale_id: sale.id,
-      menu_item_id: line.menuItemId,
-      name: line.name,
-      quantity: line.quantity,
-      unit_price: line.unitPrice,
-      line_total: line.lineTotal,
-    })),
-  );
-
-  if (itemsError) throw itemsError;
-
-  const { error: paymentsError } = await supabase.from("sale_payments").insert(
-    payments.map((payment) => ({
-      sale_id: sale.id,
-      method: payment.method,
-      amount: payment.amount,
-      cash_received: payment.cashReceived ?? null,
-      change_given: payment.cashReceived != null ? payment.cashReceived - payment.amount : null,
-    })),
-  );
-
-  if (paymentsError) throw paymentsError;
-
-  return { id: sale.id };
-}
-
-async function snapshotSale(supabase: SupabaseClient, saleId: string) {
-  const { data: sale, error: saleError } = await supabase.from("sales").select("*").eq("id", saleId).single();
-  if (saleError) throw saleError;
-
-  const { data: items, error: itemsError } = await supabase.from("sale_items").select("*").eq("sale_id", saleId);
-  if (itemsError) throw itemsError;
-
-  const { data: payments, error: paymentsError } = await supabase
-    .from("sale_payments")
-    .select("*")
-    .eq("sale_id", saleId);
-  if (paymentsError) throw paymentsError;
-
-  const { error: insertError } = await supabase
-    .from("sale_edits")
-    .insert({ sale_id: saleId, snapshot: { sale, items, payments } });
-  if (insertError) throw insertError;
+  return { id };
 }
 
 export async function editSale(
@@ -108,68 +100,37 @@ export async function editSale(
   client?: SupabaseClient,
 ): Promise<void> {
   const supabase = client ?? (await createServerClient());
+  const total = assertPaymentsMatchTotal(lines, payments);
 
-  await snapshotSale(supabase, saleId);
+  const { error } = await supabase.rpc("edit_sale", {
+    p_sale_id: saleId,
+    p_total: total,
+    p_items: toRpcItems(lines),
+    p_payments: toRpcPayments(payments),
+  });
 
-  const total = lines.reduce((sum, line) => sum + line.lineTotal, 0);
-
-  const { error: updateError } = await supabase.from("sales").update({ total, edited: true }).eq("id", saleId);
-  if (updateError) throw updateError;
-
-  const { error: deleteItemsError } = await supabase.from("sale_items").delete().eq("sale_id", saleId);
-  if (deleteItemsError) throw deleteItemsError;
-
-  const { error: insertItemsError } = await supabase.from("sale_items").insert(
-    lines.map((line) => ({
-      sale_id: saleId,
-      menu_item_id: line.menuItemId,
-      name: line.name,
-      quantity: line.quantity,
-      unit_price: line.unitPrice,
-      line_total: line.lineTotal,
-    })),
-  );
-  if (insertItemsError) throw insertItemsError;
-
-  const { error: deletePaymentsError } = await supabase.from("sale_payments").delete().eq("sale_id", saleId);
-  if (deletePaymentsError) throw deletePaymentsError;
-
-  const { error: insertPaymentsError } = await supabase.from("sale_payments").insert(
-    payments.map((payment) => ({
-      sale_id: saleId,
-      method: payment.method,
-      amount: payment.amount,
-      cash_received: payment.cashReceived ?? null,
-      change_given: payment.cashReceived != null ? payment.cashReceived - payment.amount : null,
-    })),
-  );
-  if (insertPaymentsError) throw insertPaymentsError;
+  if (error) throw error;
 }
 
 export async function cancelSale(saleId: string, client?: SupabaseClient): Promise<void> {
   const supabase = client ?? (await createServerClient());
 
-  await snapshotSale(supabase, saleId);
-
-  const { error } = await supabase.from("sales").update({ status: "cancelled" }).eq("id", saleId);
+  const { error } = await supabase.rpc("cancel_sale", { p_sale_id: saleId });
   if (error) throw error;
 }
 
-export async function listSalesByDate(date: string, client?: SupabaseClient): Promise<SaleWithDetails[]> {
-  const supabase = client ?? (await createServerClient());
-
-  const { data, error } = await supabase
-    .from("sales")
-    .select(
-      "id, created_at, status, total, edited, sale_items(menu_item_id, name, quantity, unit_price, line_total), sale_payments(method, amount, cash_received)",
-    )
-    .gte("created_at", `${date}T00:00:00.000Z`)
-    .lte("created_at", `${date}T23:59:59.999Z`)
-    .order("created_at", { ascending: true });
-
-  if (error) throw error;
-
-  return (data ?? []).map((row) => ({
+function mapSaleRow(row: {
+  id: string;
+  created_at: string;
+  status: "completed" | "cancelled";
+  total: number;
+  edited: boolean;
+  sale_items:
+    | { menu_item_id: string | null; name: string; quantity: number; unit_price: number; line_total: number }[]
+    | null;
+  sale_payments: { method: PaymentMethod; amount: number; cash_received: number | null }[] | null;
+}): SaleWithDetails {
+  return {
     id: row.id,
     createdAt: row.created_at,
     status: row.status,
@@ -187,5 +148,30 @@ export async function listSalesByDate(date: string, client?: SupabaseClient): Pr
       amount: payment.amount,
       cashReceived: payment.cash_received,
     })),
-  }));
+  };
+}
+
+export async function listSalesByDate(date: string, client?: SupabaseClient): Promise<SaleWithDetails[]> {
+  return listSalesBetween(date, date, client);
+}
+
+export async function listSalesBetween(
+  fromDate: string,
+  toDate: string,
+  client?: SupabaseClient,
+): Promise<SaleWithDetails[]> {
+  const supabase = client ?? (await createServerClient());
+
+  const { data, error } = await supabase
+    .from("sales")
+    .select(
+      "id, created_at, status, total, edited, sale_items(menu_item_id, name, quantity, unit_price, line_total), sale_payments(method, amount, cash_received)",
+    )
+    .gte("created_at", brazilDayStart(fromDate))
+    .lte("created_at", brazilDayEnd(toDate))
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+
+  return (data ?? []).map(mapSaleRow);
 }

@@ -1,5 +1,6 @@
 import type { SaleWithDetails } from "@/lib/sales/actions";
 import type { PaymentMethod } from "@/lib/pos/payments";
+import { toBrazilDate } from "@/lib/date";
 
 export type DailyRevenue = {
   date: string;
@@ -15,7 +16,7 @@ export function aggregateRevenueByDay(sales: SaleWithDetails[]): DailyRevenue[] 
   const byDate = new Map<string, DailyRevenue>();
 
   for (const sale of sales) {
-    const date = sale.createdAt.slice(0, 10);
+    const date = toBrazilDate(sale.createdAt);
 
     if (!byDate.has(date)) {
       byDate.set(date, { date, totalCents: 0, byMethod: emptyByMethod() });

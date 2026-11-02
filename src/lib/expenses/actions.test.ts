@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterEach, describe, expect, test } from "vitest";
-import { addExpense, listExpenses } from "./actions";
+import { addExpense, deleteExpense, listExpenses } from "./actions";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const anonKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
@@ -54,5 +54,20 @@ describe("addExpense / listExpenses", () => {
     const client = await signInAsOperador();
 
     await expect(addExpense("2026-11-15", "Deveria falhar", 10, client)).rejects.toThrow();
+  });
+});
+
+describe("deleteExpense", () => {
+  test("an admin can delete a mistaken expense, removing it from listExpenses", async () => {
+    const client = await signInAsAdmin();
+    const description = `Erro de digitação ${Date.now()}`;
+
+    await addExpense("2026-11-16", description, 1000, client);
+    const [inserted] = await listExpenses("2026-11-16", "2026-11-16", client);
+
+    await deleteExpense(inserted.id, client);
+
+    const after = await listExpenses("2026-11-16", "2026-11-16", client);
+    expect(after.map((e) => e.id)).not.toContain(inserted.id);
   });
 });

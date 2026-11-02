@@ -9,9 +9,18 @@ export type Purchase = {
   id: string;
   date: string;
   total: number;
-  photoUrl: string | null;
+  photoPath: string | null;
   items: PurchaseItemInput[];
 };
+
+// The "notas-fiscais" bucket is private (admin-only), so a public URL never resolves —
+// store the storage path and mint a short-lived signed URL only when actually viewing one.
+function sanitizeFileName(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-zA-Z0-9.]+/g, "-");
+}
 
 export async function addPurchase(
   date: string,
@@ -21,22 +30,24 @@ export async function addPurchase(
 ): Promise<void> {
   const supabase = client ?? (await createServerClient());
 
-  let photoUrl: string | null = null;
+  let photoPath: string | null = null;
 
   if (photo) {
-    const path = `${date}-${crypto.randomUUID()}-${photo.name}`;
-    const { error: uploadError } = await supabase.storage.from("notas-fiscais").upload(path, photo);
+    const path = `${date}-${crypto.randomUUID()}-${sanitizeFileName(photo.name)}`;
+    const buffer = await photo.arrayBuffer();
+    const { error: uploadError } = await supabase.storage
+      .from("notas-fiscais")
+      .upload(path, buffer, { contentType: photo.type });
     if (uploadError) throw uploadError;
 
-    const { data } = supabase.storage.from("notas-fiscais").getPublicUrl(path);
-    photoUrl = data.publicUrl;
+    photoPath = path;
   }
 
   const total = items.reduce((sum, item) => sum + item.value, 0);
 
   const { data: purchase, error: purchaseError } = await supabase
     .from("purchases")
-    .insert({ date, total, photo_url: photoUrl })
+    .insert({ date, total, photo_url: photoPath })
     .select("id")
     .single();
 
@@ -74,13 +85,22 @@ export async function listPurchases(
     id: row.id,
     date: row.date,
     total: row.total,
-    photoUrl: row.photo_url,
+    photoPath: row.photo_url,
     items: (row.purchase_items ?? []).map((item) => ({
       productName: item.product_name,
       quantity: item.quantity,
       value: item.value,
     })),
   }));
+}
+
+export async function getPurchasePhotoUrl(path: string, client?: SupabaseClient): Promise<string> {
+  const supabase = client ?? (await createServerClient());
+
+  const { data, error } = await supabase.storage.from("notas-fiscais").createSignedUrl(path, 60 * 60);
+  if (error) throw error;
+
+  return data.signedUrl;
 }
 
 export async function suggestProductNames(query: string, client?: SupabaseClient): Promise<string[]> {
@@ -95,4 +115,13 @@ export async function suggestProductNames(query: string, client?: SupabaseClient
   if (error) throw error;
 
   return Array.from(new Set((data ?? []).map((row) => row.product_name)));
+}
+
+export async function deletePurchase(id: string, client?: SupabaseClient): Promise<void> {
+  const supabase = client ?? (await createServerClient());
+
+  // purchase_items has `on delete cascade` on its FK, so this removes the line items too.
+  const { error } = await supabase.from("purchases").delete().eq("id", id);
+
+  if (error) throw error;
 }

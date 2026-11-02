@@ -69,6 +69,13 @@ describe("createSale", () => {
 
     await expect(createSale(lines, payments, anonClient)).rejects.toThrow();
   });
+
+  test("payments that don't sum to the cart total are rejected before touching the database", async () => {
+    const client = await signInAsOperador();
+    const mismatched: PaymentEntry[] = [{ method: "dinheiro", amount: 1 }];
+
+    await expect(createSale(lines, mismatched, client)).rejects.toThrow();
+  });
 });
 
 describe("editSale", () => {

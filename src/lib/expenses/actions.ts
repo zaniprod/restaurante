@@ -36,3 +36,11 @@ export async function addExpense(
 
   if (error) throw error;
 }
+
+export async function deleteExpense(id: string, client?: SupabaseClient): Promise<void> {
+  const supabase = client ?? (await createServerClient());
+
+  const { error } = await supabase.from("expenses").delete().eq("id", id);
+
+  if (error) throw error;
+}

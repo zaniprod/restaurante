@@ -2,36 +2,27 @@
 
 import { useEffect, useState } from "react";
 import { aggregateRevenueByDay, type DailyRevenue } from "@/lib/reports/revenue";
-import { listSalesByDate, type SaleWithDetails } from "@/lib/sales/actions";
+import { listSalesBetween } from "@/lib/sales/actions";
+import { currentMonthRangeInBrazil } from "@/lib/date";
 
 function formatBRL(cents: number): string {
   return `R$ ${(cents / 100).toFixed(2).replace(".", ",")}`;
 }
 
-function datesInCurrentMonth(): string[] {
-  const now = new Date();
-  const year = now.getUTCFullYear();
-  const month = now.getUTCMonth();
-  const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
-
-  return Array.from({ length: daysInMonth }, (_, i) => {
-    const day = String(i + 1).padStart(2, "0");
-    const monthStr = String(month + 1).padStart(2, "0");
-    return `${year}-${monthStr}-${day}`;
-  });
-}
-
 export default function AdminDashboardPage() {
   const [revenue, setRevenue] = useState<DailyRevenue[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { from, to, dates } = currentMonthRangeInBrazil();
 
   useEffect(() => {
     async function load() {
-      const dates = datesInCurrentMonth();
-      const results = await Promise.all(dates.map((date) => listSalesByDate(date)));
-      const allSales: SaleWithDetails[] = results.flat();
-      setRevenue(aggregateRevenueByDay(allSales));
+      setLoading(true);
+      const sales = await listSalesBetween(from, to);
+      setRevenue(aggregateRevenueByDay(sales));
+      setLoading(false);
     }
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const byDate = new Map(revenue.map((r) => [r.date, r]));
@@ -39,6 +30,7 @@ export default function AdminDashboardPage() {
   return (
     <div>
       <h1>Faturamento do mês</h1>
+      {loading && <p>Carregando...</p>}
       <table>
         <thead>
           <tr>
@@ -50,7 +42,7 @@ export default function AdminDashboardPage() {
           </tr>
         </thead>
         <tbody>
-          {datesInCurrentMonth().map((date) => {
+          {dates.map((date) => {
             const entry = byDate.get(date);
             return (
               <tr key={date}>

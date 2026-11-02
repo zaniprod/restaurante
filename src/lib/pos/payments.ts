@@ -19,6 +19,17 @@ export function validatePayments(
     };
   }
 
+  for (const payment of payments) {
+    if (payment.method !== "dinheiro" || payment.cashReceived == null) continue;
+
+    const cashReceivedCents = Math.round(payment.cashReceived * 100);
+    const amountCents = Math.round(payment.amount * 100);
+
+    if (cashReceivedCents < amountCents) {
+      return { valid: false, error: "Valor recebido insuficiente para o pagamento em dinheiro." };
+    }
+  }
+
   return { valid: true };
 }
 

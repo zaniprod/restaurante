@@ -29,6 +29,22 @@ describe("validatePayments", () => {
     expect(result.valid).toBe(false);
     expect(result.error).toBeTruthy();
   });
+
+  test("a dinheiro entry whose cashReceived is less than its amount is invalid", () => {
+    const result = validatePayments([{ method: "dinheiro", amount: 34.9, cashReceived: 20 }], 3490);
+    expect(result.valid).toBe(false);
+    expect(result.error).toBeTruthy();
+  });
+
+  test("a dinheiro entry whose cashReceived exactly matches its amount is valid", () => {
+    const result = validatePayments([{ method: "dinheiro", amount: 34.9, cashReceived: 34.9 }], 3490);
+    expect(result).toEqual({ valid: true });
+  });
+
+  test("a dinheiro entry with no cashReceived given is valid (exact payment, no change)", () => {
+    const result = validatePayments([{ method: "dinheiro", amount: 34.9 }], 3490);
+    expect(result).toEqual({ valid: true });
+  });
 });
 
 describe("calculateChangeCents", () => {

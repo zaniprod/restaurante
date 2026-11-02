@@ -44,4 +44,20 @@ describe("aggregateRevenueByDay", () => {
   test("an empty input returns an empty array", () => {
     expect(aggregateRevenueByDay([])).toEqual([]);
   });
+
+  test("groups by the Brasília-time date, not the UTC date", () => {
+    // 2026-11-02 21:30 in Brasília (UTC-3) is already 2026-11-03 00:30 UTC.
+    const sales: SaleWithDetails[] = [
+      sale({
+        id: "1",
+        createdAt: "2026-11-03T00:30:00.000Z",
+        total: 10,
+        payments: [{ method: "dinheiro", amount: 10, cashReceived: null }],
+      }),
+    ];
+
+    const result = aggregateRevenueByDay(sales);
+
+    expect(result).toEqual([{ date: "2026-11-02", totalCents: 1000, byMethod: { dinheiro: 1000, pix: 0, cartao: 0 } }]);
+  });
 });
