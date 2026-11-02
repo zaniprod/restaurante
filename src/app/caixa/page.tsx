@@ -9,8 +9,12 @@ import { addItem, addManualValueLine, cartTotalCents, removeLine, type CartLine,
 import type { PaymentEntry } from "@/lib/pos/payments";
 import { cancelSale, createSale, editSale, getMenuItems, listSalesByDate, type SaleWithDetails } from "@/lib/sales/actions";
 import { todayInBrazil } from "@/lib/date";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createBrowserClient } from "@/lib/supabase/client";
 
 export default function CaixaPage() {
+  const router = useRouter();
   const [items, setItems] = useState<MenuItem[]>([]);
   const [cart, setCart] = useState<CartLine[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -116,12 +120,26 @@ export default function CaixaPage() {
     }
   }
 
+  async function handleLogout() {
+    const supabase = createBrowserClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+  }
+
   return (
     <div className="min-h-screen">
-      <header className="border-b border-line px-6 py-4">
+      <header className="flex items-center justify-between border-b border-line px-6 py-4">
         <p className="font-serif text-xl text-ink">
           Calçadão <span className="text-ink-soft">· Caixa</span>
         </p>
+        <nav className="flex items-center gap-5 text-sm text-ink-soft">
+          <Link href="/admin" className="hover:text-ink">
+            Painel admin
+          </Link>
+          <button type="button" onClick={handleLogout} className="hover:text-rust">
+            Sair
+          </button>
+        </nav>
       </header>
 
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-6 py-8 lg:grid-cols-[1fr_380px]">

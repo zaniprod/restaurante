@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/admin/despesas", label: "Despesas" },
   { href: "/admin/compras", label: "Compras" },
   { href: "/admin/balanco", label: "Balanço" },
+  { href: "/caixa", label: "Caixa" },
 ];
 
 export function AdminNav() {
