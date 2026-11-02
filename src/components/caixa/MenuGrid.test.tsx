@@ -62,4 +62,18 @@ describe("MenuGrid", () => {
 
     expect(screen.getByRole("button", { name: /Refrigerante Lata/ })).toBeInTheDocument();
   });
+
+  test("Pratos and Lanches show first, other categories keep their relative order", () => {
+    const manyItems: MenuItem[] = [
+      { id: "1", category: "Xis", name: "Xis Salada", price: 34.9, manualValue: false },
+      { id: "2", category: "Bebidas", name: "Água Mineral", price: 5, manualValue: false },
+      { id: "3", category: "Pratos", name: "Prato Feito", price: 34.9, manualValue: false },
+      { id: "4", category: "Lanches", name: "Coxinha", price: 8, manualValue: false },
+    ];
+
+    render(<MenuGrid items={manyItems} onSelect={vi.fn()} />);
+
+    const headingNames = screen.getAllByRole("heading").map((h) => h.textContent);
+    expect(headingNames).toEqual(["Pratos", "Lanches", "Xis", "Bebidas"]);
+  });
 });

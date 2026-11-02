@@ -32,6 +32,19 @@ function categoryIcon(category: string): LucideIcon {
   return CATEGORY_ICONS[category] ?? UtensilsCrossed;
 }
 
+// Pratos and Lanches sell the most, so they show first; everything else keeps the order
+// it was already in (Array.prototype.sort is stable, so ties don't get reshuffled).
+const CATEGORY_PRIORITY = ["Pratos", "Lanches"];
+
+function categoryRank(category: string): number {
+  const index = CATEGORY_PRIORITY.indexOf(category);
+  return index === -1 ? CATEGORY_PRIORITY.length : index;
+}
+
+function sortCategories(categories: string[]): string[] {
+  return [...categories].sort((a, b) => categoryRank(a) - categoryRank(b));
+}
+
 export function MenuGrid(props: {
   items: MenuItem[];
   onSelect: (item: MenuItem, manualValue?: number) => void;
@@ -42,7 +55,7 @@ export function MenuGrid(props: {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
-  const categories = Array.from(new Set(items.map((item) => item.category)));
+  const categories = sortCategories(Array.from(new Set(items.map((item) => item.category))));
 
   const visibleItems = items.filter((item) => {
     const matchesCategory = activeCategory === null || item.category === activeCategory;
