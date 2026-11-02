@@ -43,3 +43,8 @@ next-env.d.ts
 # supabase local stack / sdd workspace (project-specific, not part of Next.js defaults)
 .supabase/
 .superpowers/
+
+# locally installed Claude Code skills (dev tooling, not app code)
+.agents/
+.claude/
+skills-lock.json

@@ -11,24 +11,40 @@ export function SalesList(props: {
 }) {
   const { sales, onEdit, onCancel } = props;
 
+  if (sales.length === 0) {
+    return <p className="py-4 text-sm text-ink-soft">Nenhuma venda registrada.</p>;
+  }
+
   return (
-    <div>
+    <ul>
       {sales.map((sale) => (
-        <div key={sale.id}>
-          <span>{formatBRL(sale.total)}</span>
-          {sale.status === "cancelled" ? (
-            <span>Cancelada</span>
-          ) : sale.edited ? (
-            <span>Editada</span>
-          ) : null}
-          <button type="button" onClick={() => onEdit(sale.id)}>
+        <li key={sale.id} className="flex items-center gap-3 border-b border-line py-2 text-sm">
+          <span className="w-24 font-medium text-ink">{formatBRL(sale.total)}</span>
+
+          <span className="flex-1">
+            {sale.status === "cancelled" ? (
+              <span className="border border-rust px-1.5 py-0.5 text-xs text-rust">Cancelada</span>
+            ) : sale.edited ? (
+              <span className="border border-ink-soft px-1.5 py-0.5 text-xs text-ink-soft">Editada</span>
+            ) : null}
+          </span>
+
+          <button
+            type="button"
+            onClick={() => onEdit(sale.id)}
+            className="text-green underline-offset-2 hover:underline"
+          >
             Editar
           </button>
-          <button type="button" onClick={() => onCancel(sale.id)}>
+          <button
+            type="button"
+            onClick={() => onCancel(sale.id)}
+            className="text-rust underline-offset-2 hover:underline"
+          >
             Cancelar
           </button>
-        </div>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

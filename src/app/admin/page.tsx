@@ -27,30 +27,36 @@ export default function AdminDashboardPage() {
 
   const byDate = new Map(revenue.map((r) => [r.date, r]));
 
+  const monthTotalCents = revenue.reduce((sum, r) => sum + r.totalCents, 0);
+
   return (
     <div>
-      <h1>Faturamento do mês</h1>
-      {loading && <p>Carregando...</p>}
-      <table>
+      <h1 className="text-2xl font-semibold text-ink">Faturamento</h1>
+      <p className="mt-1 text-sm text-ink-soft">{loading ? "Carregando…" : `Este mês, ${formatBRL(monthTotalCents)} no total`}</p>
+
+      <table className="mt-6 w-full border-collapse text-sm">
         <thead>
-          <tr>
-            <th>Data</th>
-            <th>Total</th>
-            <th>Dinheiro</th>
-            <th>Pix</th>
-            <th>Cartão</th>
+          <tr className="border-b border-line text-left text-ink-soft">
+            <th className="py-2 pr-4 font-normal">Data</th>
+            <th className="py-2 pr-4 text-right font-normal">Total</th>
+            <th className="py-2 pr-4 text-right font-normal">Dinheiro</th>
+            <th className="py-2 pr-4 text-right font-normal">Pix</th>
+            <th className="py-2 text-right font-normal">Cartão</th>
           </tr>
         </thead>
         <tbody>
           {dates.map((date) => {
             const entry = byDate.get(date);
+            const hasRevenue = (entry?.totalCents ?? 0) > 0;
             return (
-              <tr key={date}>
-                <td>{date}</td>
-                <td>{formatBRL(entry?.totalCents ?? 0)}</td>
-                <td>{formatBRL(entry?.byMethod.dinheiro ?? 0)}</td>
-                <td>{formatBRL(entry?.byMethod.pix ?? 0)}</td>
-                <td>{formatBRL(entry?.byMethod.cartao ?? 0)}</td>
+              <tr key={date} className="border-b border-line/60">
+                <td className="py-1.5 pr-4 text-ink-soft">{date}</td>
+                <td className={`py-1.5 pr-4 text-right tabular-nums ${hasRevenue ? "font-medium text-ink" : "text-ink-soft"}`}>
+                  {formatBRL(entry?.totalCents ?? 0)}
+                </td>
+                <td className="py-1.5 pr-4 text-right tabular-nums text-ink-soft">{formatBRL(entry?.byMethod.dinheiro ?? 0)}</td>
+                <td className="py-1.5 pr-4 text-right tabular-nums text-ink-soft">{formatBRL(entry?.byMethod.pix ?? 0)}</td>
+                <td className="py-1.5 text-right tabular-nums text-ink-soft">{formatBRL(entry?.byMethod.cartao ?? 0)}</td>
               </tr>
             );
           })}

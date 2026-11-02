@@ -26,35 +26,51 @@ export function MenuGrid(props: {
   }
 
   return (
-    <div>
+    <div className="space-y-8">
       {categories.map((category) => (
         <section key={category}>
-          <h2>{category}</h2>
-          {items
-            .filter((item) => item.category === category)
-            .map((item) => (
-              <div key={item.id}>
-                <button type="button" onClick={() => (item.manualValue ? setOpenItemId(item.id) : onSelect(item))}>
-                  {item.manualValue ? item.name : `${item.name} — ${formatBRL(item.price ?? 0)}`}
-                </button>
+          <h2 className="mb-3 border-b border-line pb-2 font-serif text-lg text-ink">{category}</h2>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {items
+              .filter((item) => item.category === category)
+              .map((item) => (
+                <div key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => (item.manualValue ? setOpenItemId(item.id) : onSelect(item))}
+                    className="flex w-full flex-col items-start gap-1 border border-line bg-white/50 px-3 py-3 text-left transition-colors hover:border-green hover:bg-green/5"
+                  >
+                    <span className="text-sm leading-snug text-ink">{item.name}</span>
+                    {!item.manualValue && (
+                      <span className="text-sm font-medium text-green">{formatBRL(item.price ?? 0)}</span>
+                    )}
+                  </button>
 
-                {item.manualValue && openItemId === item.id && (
-                  <div>
-                    <label htmlFor={`valor-${item.id}`}>Valor</label>
-                    <input
-                      id={`valor-${item.id}`}
-                      type="number"
-                      step="0.01"
-                      value={manualValue}
-                      onChange={(e) => setManualValue(e.target.value)}
-                    />
-                    <button type="button" onClick={() => handleManualSubmit(item)}>
-                      Adicionar
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))}
+                  {item.manualValue && openItemId === item.id && (
+                    <div className="mt-1 flex items-center gap-2 border border-line bg-paper-dim px-2 py-2">
+                      <label htmlFor={`valor-${item.id}`} className="text-sm text-ink-soft">
+                        Valor
+                      </label>
+                      <input
+                        id={`valor-${item.id}`}
+                        type="number"
+                        step="0.01"
+                        value={manualValue}
+                        onChange={(e) => setManualValue(e.target.value)}
+                        className="w-20 border-b border-line bg-transparent text-right outline-none focus:border-green"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleManualSubmit(item)}
+                        className="bg-green px-3 py-1 text-sm font-medium text-paper hover:bg-green-dark"
+                      >
+                        Adicionar
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+          </div>
         </section>
       ))}
     </div>

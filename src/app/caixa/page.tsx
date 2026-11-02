@@ -117,31 +117,71 @@ export default function CaixaPage() {
   }
 
   return (
-    <div>
-      <MenuGrid items={items} onSelect={handleSelect} />
-      <Cart lines={cart} onRemove={handleRemove} />
-      <fieldset disabled={submitting}>
-        <PaymentForm key={saleFormKey} totalCents={cartTotalCents(cart)} onConfirm={handleConfirm} />
-      </fieldset>
-      {confirmation && <p role="status">{confirmation}</p>}
-      {error && <p role="alert">{error}</p>}
+    <div className="min-h-screen">
+      <header className="border-b border-line px-6 py-4">
+        <p className="font-serif text-xl text-ink">
+          Calçadão <span className="text-ink-soft">· Caixa</span>
+        </p>
+      </header>
 
-      <h2>Vendas de hoje</h2>
-      <SalesList sales={todaySales} onEdit={startEdit} onCancel={handleCancel} />
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-6 py-8 lg:grid-cols-[1fr_380px]">
+        <div>
+          <MenuGrid items={items} onSelect={handleSelect} />
+        </div>
+
+        <aside className="lg:sticky lg:top-6 lg:self-start">
+          <div className="border border-line bg-white/40 p-4">
+            <h2 className="mb-3 font-serif text-lg text-ink">Comanda</h2>
+            <Cart lines={cart} onRemove={handleRemove} />
+
+            <div className="mt-4">
+              <fieldset disabled={submitting} className="contents">
+                <PaymentForm key={saleFormKey} totalCents={cartTotalCents(cart)} onConfirm={handleConfirm} />
+              </fieldset>
+            </div>
+
+            {confirmation && (
+              <p role="status" className="mt-3 text-sm text-green">
+                {confirmation}
+              </p>
+            )}
+            {error && (
+              <p role="alert" className="mt-3 text-sm text-rust">
+                {error}
+              </p>
+            )}
+          </div>
+        </aside>
+      </div>
+
+      <div className="mx-auto max-w-6xl border-t border-line px-6 py-8">
+        <h2 className="mb-3 font-serif text-lg text-ink">Vendas de hoje</h2>
+        <SalesList sales={todaySales} onEdit={startEdit} onCancel={handleCancel} />
+      </div>
 
       {editingId && (
-        <div>
-          <h3>Editando venda</h3>
-          <MenuGrid items={items} onSelect={handleEditSelect} />
-          <Cart lines={editCart} onRemove={(index) => setEditCart((current) => removeLine(current, index))} />
-          <PaymentForm
-            totalCents={cartTotalCents(editCart)}
-            onConfirm={handleEditConfirm}
-            initialPayments={editPayments}
-          />
-          <button type="button" onClick={cancelEdit}>
-            Cancelar edição
-          </button>
+        <div className="mx-auto max-w-6xl border-t-2 border-green px-6 py-8">
+          <h3 className="mb-4 font-serif text-lg text-ink">Editando venda</h3>
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]">
+            <MenuGrid items={items} onSelect={handleEditSelect} />
+            <div className="border border-line bg-white/40 p-4">
+              <Cart lines={editCart} onRemove={(index) => setEditCart((current) => removeLine(current, index))} />
+              <div className="mt-4">
+                <PaymentForm
+                  totalCents={cartTotalCents(editCart)}
+                  onConfirm={handleEditConfirm}
+                  initialPayments={editPayments}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="mt-3 text-sm text-ink-soft underline-offset-2 hover:underline"
+              >
+                Cancelar edição
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

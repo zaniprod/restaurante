@@ -30,28 +30,54 @@ export default function LoginPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <label htmlFor="email">Email</label>
-      <input
-        id="email"
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
+    <div className="flex min-h-screen flex-col items-center justify-center px-6">
+      <div className="w-full max-w-sm">
+        <p className="font-serif text-3xl text-ink">Calçadão</p>
+        <p className="mb-8 text-ink-soft">Café e Restaurante</p>
 
-      <label htmlFor="password">Senha</label>
-      <input
-        id="password"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
+        <form onSubmit={handleSubmit} className="space-y-5 border-t border-line pt-6">
+          <div>
+            <label htmlFor="email" className="block text-sm text-ink-soft">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="mt-1 w-full border-b border-line bg-transparent py-2 text-ink outline-none focus:border-green"
+            />
+          </div>
 
-      {error && <p role="alert">{error}</p>}
+          <div>
+            <label htmlFor="password" className="block text-sm text-ink-soft">
+              Senha
+            </label>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="mt-1 w-full border-b border-line bg-transparent py-2 text-ink outline-none focus:border-green"
+            />
+          </div>
 
-      <button type="submit">Entrar</button>
-    </form>
+          {error && (
+            <p role="alert" className="text-sm text-rust">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            className="w-full bg-green py-3 font-medium text-paper transition-colors hover:bg-green-dark"
+          >
+            Entrar
+          </button>
+        </form>
+      </div>
+    </div>
   );
 }

@@ -42,15 +42,32 @@ export default function BalancoPage() {
   }, []);
 
   const balanceCents = calculateBalance(revenueCents, expensesCents, purchasesCents);
+  const positive = balanceCents >= 0;
 
   return (
     <div>
-      <h1>Balanço do mês</h1>
-      {loading && <p>Carregando...</p>}
-      <p>Receita: {formatBRL(revenueCents)}</p>
-      <p>Despesas: {formatBRL(expensesCents)}</p>
-      <p>Compras: {formatBRL(purchasesCents)}</p>
-      <p style={{ color: balanceCents < 0 ? "red" : "green" }}>Balanço: {formatBRL(balanceCents)}</p>
+      <h1 className="text-2xl font-semibold text-ink">Balanço</h1>
+      <p className="mt-1 text-sm text-ink-soft">{loading ? "Carregando…" : "Receita menos despesas e compras, este mês"}</p>
+
+      <div className="mt-8 border border-line bg-white/40 p-6">
+        <p className="text-sm text-ink-soft">Balanço do mês</p>
+        <p className={`font-serif text-5xl ${positive ? "text-green" : "text-rust"}`}>{formatBRL(balanceCents)}</p>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 divide-y divide-line border border-line bg-white/40 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        <div className="p-4">
+          <p className="text-xs text-ink-soft">Receita</p>
+          <p className="tabular-nums text-xl font-medium text-ink">{formatBRL(revenueCents)}</p>
+        </div>
+        <div className="p-4">
+          <p className="text-xs text-ink-soft">Despesas</p>
+          <p className="tabular-nums text-xl font-medium text-ink">{formatBRL(expensesCents)}</p>
+        </div>
+        <div className="p-4">
+          <p className="text-xs text-ink-soft">Compras</p>
+          <p className="tabular-nums text-xl font-medium text-ink">{formatBRL(purchasesCents)}</p>
+        </div>
+      </div>
     </div>
   );
 }

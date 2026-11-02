@@ -31,7 +31,8 @@ const insertedDescriptions: string[] = [];
 afterEach(async () => {
   if (insertedDescriptions.length === 0) return;
   const admin = createClient(url, secretKey, { auth: { persistSession: false } });
-  await admin.from("expenses").delete().in("description", insertedDescriptions);
+  const { error } = await admin.from("expenses").delete().in("description", insertedDescriptions);
+  if (error) throw new Error(`Test cleanup failed to delete expenses ${insertedDescriptions.join(", ")}: ${error.message}`);
   insertedDescriptions.length = 0;
 });
 

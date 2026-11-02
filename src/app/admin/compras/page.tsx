@@ -69,23 +69,46 @@ export default function ComprasPage() {
     }
   }
 
+  const monthTotal = purchases.reduce((sum, p) => sum + p.total, 0);
+
   return (
     <div>
-      <h1>Compras de mercado</h1>
-      <PurchaseForm onSubmit={handleSubmit} onSearchProduct={suggestProductNames} />
-      {error && <p role="alert">{error}</p>}
+      <h1 className="text-2xl font-semibold text-ink">Compras de mercado</h1>
+      <p className="mt-1 text-sm text-ink-soft">Este mês, {formatBRL(monthTotal)} no total</p>
 
-      <h2>Compras do mês</h2>
+      <div className="mt-6 border border-line bg-white/40 p-4">
+        <PurchaseForm onSubmit={handleSubmit} onSearchProduct={suggestProductNames} />
+        {error && (
+          <p role="alert" className="mt-3 text-sm text-rust">
+            {error}
+          </p>
+        )}
+      </div>
+
+      <h2 className="mt-8 mb-2 text-sm text-ink-soft">Compras do mês</h2>
+      {purchases.length === 0 && <p className="py-4 text-sm text-ink-soft">Nenhuma compra lançada.</p>}
       <ul>
         {purchases.map((purchase) => (
-          <li key={purchase.id}>
-            {purchase.date} — {formatBRL(purchase.total)} — {purchase.items.length} item(ns){" "}
+          <li key={purchase.id} className="flex items-center gap-3 border-b border-line py-2 text-sm">
+            <span className="w-24 shrink-0 text-ink-soft">{purchase.date}</span>
+            <span className="flex-1 text-ink">
+              {purchase.items.length} {purchase.items.length === 1 ? "item" : "itens"}
+            </span>
+            <span className="tabular-nums font-medium text-ink">{formatBRL(purchase.total)}</span>
             {purchase.photoPath && (
-              <button type="button" onClick={() => handleViewPhoto(purchase.photoPath!)}>
+              <button
+                type="button"
+                onClick={() => handleViewPhoto(purchase.photoPath!)}
+                className="text-xs text-green underline-offset-2 hover:underline"
+              >
                 Ver nota
               </button>
-            )}{" "}
-            <button type="button" onClick={() => handleDelete(purchase.id)}>
+            )}
+            <button
+              type="button"
+              onClick={() => handleDelete(purchase.id)}
+              className="text-xs text-rust underline-offset-2 hover:underline"
+            >
               Excluir
             </button>
           </li>

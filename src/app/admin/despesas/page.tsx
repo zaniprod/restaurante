@@ -49,18 +49,35 @@ export default function DespesasPage() {
     }
   }
 
+  const monthTotal = expenses.reduce((sum, e) => sum + e.amount, 0);
+
   return (
     <div>
-      <h1>Despesas</h1>
-      <ExpenseForm onSubmit={handleSubmit} />
-      {error && <p role="alert">{error}</p>}
+      <h1 className="text-2xl font-semibold text-ink">Despesas</h1>
+      <p className="mt-1 text-sm text-ink-soft">Este mês, {formatBRL(monthTotal)} no total</p>
 
-      <h2>Despesas do mês</h2>
+      <div className="mt-6 border border-line bg-white/40 p-4">
+        <ExpenseForm onSubmit={handleSubmit} />
+        {error && (
+          <p role="alert" className="mt-3 text-sm text-rust">
+            {error}
+          </p>
+        )}
+      </div>
+
+      <h2 className="mt-8 mb-2 text-sm text-ink-soft">Lançamentos do mês</h2>
+      {expenses.length === 0 && <p className="py-4 text-sm text-ink-soft">Nenhuma despesa lançada.</p>}
       <ul>
         {expenses.map((expense) => (
-          <li key={expense.id}>
-            {expense.date} — {expense.description} — {formatBRL(expense.amount)}{" "}
-            <button type="button" onClick={() => handleDelete(expense.id)}>
+          <li key={expense.id} className="flex items-center gap-3 border-b border-line py-2 text-sm">
+            <span className="w-24 shrink-0 text-ink-soft">{expense.date}</span>
+            <span className="flex-1 text-ink">{expense.description}</span>
+            <span className="tabular-nums font-medium text-ink">{formatBRL(expense.amount)}</span>
+            <button
+              type="button"
+              onClick={() => handleDelete(expense.id)}
+              className="text-xs text-rust underline-offset-2 hover:underline"
+            >
               Excluir
             </button>
           </li>

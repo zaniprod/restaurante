@@ -21,33 +21,53 @@ export function ExpenseForm(props: {
     onSubmit({ date, description, amount: parseFloat(amount || "0") });
   }
 
+  const inputClass = "w-full border-b border-line bg-transparent py-1.5 text-sm text-ink outline-none focus:border-green";
+
   return (
-    <div>
-      <label htmlFor="expense-date">Data</label>
-      <input id="expense-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+    <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-[140px_1fr_140px_auto]">
+      <div>
+        <label htmlFor="expense-date" className="block text-xs text-ink-soft">
+          Data
+        </label>
+        <input id="expense-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputClass} />
+      </div>
 
-      <label htmlFor="expense-description">Descrição</label>
-      <input
-        id="expense-description"
-        type="text"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-      />
+      <div>
+        <label htmlFor="expense-description" className="block text-xs text-ink-soft">
+          Descrição
+        </label>
+        <input
+          id="expense-description"
+          type="text"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          className={inputClass}
+        />
+      </div>
 
-      <label htmlFor="expense-amount">Valor</label>
-      <input
-        id="expense-amount"
-        type="number"
-        step="0.01"
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-      />
+      <div>
+        <label htmlFor="expense-amount" className="block text-xs text-ink-soft">
+          Valor
+        </label>
+        <input
+          id="expense-amount"
+          type="number"
+          step="0.01"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          className={`${inputClass} text-right`}
+        />
+      </div>
 
-      {error && <p role="alert">{error}</p>}
-
-      <button type="button" onClick={handleSubmit}>
+      <button type="button" onClick={handleSubmit} className="bg-green px-5 py-2 text-sm font-medium text-paper hover:bg-green-dark">
         Salvar
       </button>
+
+      {error && (
+        <p role="alert" className="sm:col-span-4 text-sm text-rust">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

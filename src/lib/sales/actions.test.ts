@@ -23,7 +23,10 @@ const createdSaleIds: string[] = [];
 afterEach(async () => {
   if (createdSaleIds.length === 0) return;
   const admin = createClient(url, secretKey, { auth: { persistSession: false } });
-  await admin.from("sales").delete().in("id", createdSaleIds);
+  const { error } = await admin.from("sales").delete().in("id", createdSaleIds);
+  // A silent cleanup failure here leaves real rows in the live project with nothing to
+  // show for it — surface it instead of letting the suite report green over leaked data.
+  if (error) throw new Error(`Test cleanup failed to delete sales ${createdSaleIds.join(", ")}: ${error.message}`);
   createdSaleIds.length = 0;
 });
 

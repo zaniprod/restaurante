@@ -36,7 +36,8 @@ const createdPurchaseIds: string[] = [];
 afterEach(async () => {
   if (createdPurchaseIds.length === 0) return;
   const admin = createClient(url, secretKey, { auth: { persistSession: false } });
-  await admin.from("purchases").delete().in("id", createdPurchaseIds);
+  const { error } = await admin.from("purchases").delete().in("id", createdPurchaseIds);
+  if (error) throw new Error(`Test cleanup failed to delete purchases ${createdPurchaseIds.join(", ")}: ${error.message}`);
   createdPurchaseIds.length = 0;
 });
 

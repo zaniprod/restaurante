@@ -1,26 +1,55 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+  Design language: "ledger, not dashboard". This is a café's order pad and account
+  book, not a SaaS product — warm paper, hairline rules, serif numerals, no cards,
+  no shadows. One accent means "confirm/money-in" (green), one means "cancel/attention"
+  (rust); neither is ever decorative.
+*/
+@theme {
+  --color-ink: #2b2016;
+  --color-ink-soft: #5a4d3c;
+  --color-paper: #faf5e9;
+  --color-paper-dim: #f0e8d3;
+  --color-green: #35573b;
+  --color-green-dark: #26402b;
+  --color-rust: #8a3b2a;
+  --color-rust-dark: #6f2e21;
+  --color-line: #d8cba8;
+
+  --font-serif: var(--font-source-serif), "Source Serif 4", Georgia, serif;
+  --font-sans: var(--font-plex-sans), "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/*
+  Everything below lives in Tailwind's "base" layer, not left unlayered — unlayered CSS
+  beats every layered utility regardless of selector specificity, which silently defeated
+  every border-color/text-decoration utility class in the app the first time this was tried.
+*/
+@layer base {
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  * {
+    border-color: var(--color-line);
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+::selection {
+  background: var(--color-green);
+  color: var(--color-paper);
+}
+
+::selection {
+  background: var(--color-green);
+  color: var(--color-paper);
 }

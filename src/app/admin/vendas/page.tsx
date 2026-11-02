@@ -86,26 +86,55 @@ export default function VendasPage() {
 
   return (
     <div>
-      <label htmlFor="data">Data</label>
-      <input id="data" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      <div className="flex w-full flex-wrap items-center justify-between gap-4">
+        <h1 className="text-2xl font-semibold text-ink">Vendas</h1>
+        <div>
+          <label htmlFor="data" className="mr-2 text-sm text-ink-soft">
+            Data
+          </label>
+          <input
+            id="data"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="border-b border-line bg-transparent py-1 text-sm text-ink outline-none focus:border-green"
+          />
+        </div>
+      </div>
 
-      {error && <p role="alert">{error}</p>}
+      {error && (
+        <p role="alert" className="mt-3 text-sm text-rust">
+          {error}
+        </p>
+      )}
 
-      <SalesList sales={sales} onEdit={startEdit} onCancel={handleCancel} />
+      <div className="mt-6">
+        <SalesList sales={sales} onEdit={startEdit} onCancel={handleCancel} />
+      </div>
 
       {editingId && (
-        <div>
-          <h3>Editando venda</h3>
-          <MenuGrid items={items} onSelect={handleEditSelect} />
-          <Cart lines={editCart} onRemove={(index) => setEditCart((current) => removeLine(current, index))} />
-          <PaymentForm
-            totalCents={cartTotalCents(editCart)}
-            onConfirm={handleEditConfirm}
-            initialPayments={editPayments}
-          />
-          <button type="button" onClick={cancelEdit}>
-            Cancelar edição
-          </button>
+        <div className="mt-8 border-t-2 border-green pt-6">
+          <h3 className="mb-4 font-serif text-lg text-ink">Editando venda</h3>
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]">
+            <MenuGrid items={items} onSelect={handleEditSelect} />
+            <div className="border border-line bg-white/40 p-4">
+              <Cart lines={editCart} onRemove={(index) => setEditCart((current) => removeLine(current, index))} />
+              <div className="mt-4">
+                <PaymentForm
+                  totalCents={cartTotalCents(editCart)}
+                  onConfirm={handleEditConfirm}
+                  initialPayments={editPayments}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="mt-3 text-sm text-ink-soft underline-offset-2 hover:underline"
+              >
+                Cancelar edição
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
